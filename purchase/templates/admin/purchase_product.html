@@ -1,0 +1,200 @@
+{% extends 'admin/change_form.html' %}
+{% load i18n %}
+{% load bootstrap5 %}
+{% if not is_popup %}
+{% block breadcrumbs %}
+<ol class="breadcrumb">
+    <li class="home">
+        <a href="{% url 'admin:index' %}" title="{% trans 'Home' %}"><span class="glyphicon glyphicon-home"></span></a>
+    </li>
+    <li>
+        <a href="#">
+            {{ opts.app_config.verbose_name }}
+        </a>
+    </li>
+    <li>
+        {% if has_change_permission %}
+        <a href="#">
+            {{ opts.verbose_name_plural|capfirst }}
+        </a>
+        {% else %}
+        {{ opts.verbose_name_plural|capfirst }}
+        {% endif %}
+    </li>
+    <li class="active">
+        {% if add %}{% trans 'Add' %} {{ opts.verbose_name }}{% else %}{{ original|truncatewords:"18" }}{% endif %}
+    </li>
+</ol>   
+{% endblock %}
+{% endif %}
+
+{% block content %}
+<div class="puchase-product__container">
+    <div class="pruchase-product__info-container">
+        <div class="puchase-product__info"><label>Товар: </label> <span>{{ title }}</span> <span>SKU: ({{ id }})</span></div>
+        <div class="puchase-product__info"><label>Цвет: </label> <span>{{ color }}</span></div>
+        <div class="puchase-product__info"><label>Размер: </label> <span>{{ size }}</span></div>
+        <div class="puchase-product__info">
+            <label>Бренд:</label> 
+            <span> <a href="{{ brand_url }}">{{ brand }}</a></span>
+        </div>
+        <div class="puchase-product__info"><label>Категория:</label> <span> {{ category }}</span></div>
+        <div class="puchase-product__info"><label>Условие выкупа:</label> <span> {{ condition }}</span></div>
+        <div class="puchase-product__info">
+            <label>Заказ №:</label> 
+            <span> <a href="{{ order_url }}">{{ order }}</a></span>
+        </div>
+
+        <div class="puchase-product-statistic">
+            <div class="puchase-product__statistic-title">Заказано:</div>
+            <div class="puchase-product__statistic-data">
+                <p>в текущем заказе: {{ count_in_order }}</p>
+                <p>всего: {{ count_total }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="puchase-product__prev-video">
+        {% if videos %}
+        <p class="pruchase-product__prev-video-title"><label>Видео товара:</label></p>
+        {% for video in videos %}
+        <img src="{{ video.video_preview }}" width="100" height="75">
+        {% endfor %}
+        {% endif %}
+    </div>
+
+    <div class="puchase-product__prev-photo">
+        {% if photos %}
+        <p class="pruchase-product__prev-photo-title"><label>Фото товара:</label></p>
+        {% for photo in photos %}
+        <img src="{{ photo.image_thumb }}" width="75" height="100">
+        {% endfor %}
+        {% endif %}
+    </div>
+
+    <div class="puchase-product__comment-title">
+        <label>Комментарий к товару:</label>
+        <p>{{ product_comment.comment }}</p>
+
+        <div class="puchase-product__form-container">
+            <form class="puchase-product__form" action="create_message_order_item/" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="puchase-product__form-left">
+                    <label>Написать сообщение</label>
+                    <textarea class="puchase-product__text-comment" type="text" name="message"></textarea>
+                </div>
+                <div class="puchase-product__form-right">
+                    <input class="puchase-product__coommite-id" type="hidden" id="item_id" name="item_id" value="{{item_id}}">
+                    <div class="input__wrapper">
+                        <input class="puchase-product__btn-file" type="file" name="files" multiple>
+                        <label for="puchase-product__btn-file" class="input__file-button">
+                            <span class="input__file-icon-wrapper">📌</span>
+                            <span class="input__file-button-text">Выберите файл</span>
+                        </label>
+                    </div>                    
+                    <button class="puchase-product__apply-form" type="submit" value="Отправить" name="_create_message_order_item">Отправить</button>
+                </div>
+
+            </form>
+
+            <div class="puchase-product__correspondence-container">
+                <div class="puchase-product__correspondence-title"><label>Переписка по товару:</label></div>
+                <div class="puchase-product__correspondence-message-container">
+                    {% for item in correspondence_order_item %}
+                    <div class="puchase-product__correspondence-message puchase-product__correspondence-message--{{ item.author }}">
+                        <p class="puchase-product__correspondece-message-athor">{{ item.author }} ({{ item.created_at }}):</p>
+                        <p class="puchase-product__correspondence-message-text">{{ item.message }}</p>
+
+                        {% if item.photos %}
+                        <p class="puchase-product__correspondence-message-photo">Фото:</p>
+                        {% for photo in item.photos %}
+                        <img src="{{ photo.image_thumb }}" width="75" height="100">
+                        {% endfor %}
+                        {% endif %}
+                    </div>
+        
+                    {% endfor %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div>
+        {% if product_comment.videos %}
+        <p class="puchase-product__correspondence-message-video">Видео:</p>
+        {% for video in product_comment.videos %}
+        <img src="{{ video.video_preview }}" width="100" height="75">
+        {% endfor %}
+        {% endif %}
+    </div>
+
+    <div class="puchase-product__correspondence-comment-photo">
+        {% if product_comment.photos %}
+        <p class="pruchase-product__correspondence-comment-photo-title">Фото:</p>
+        {% for photo in product_comment.photos %}
+        <img src="{{ photo.image_thumb }}" width="75" height="100">
+        {% endfor %}
+        {% endif %}
+    </div>
+
+    <div class="puchase-product__comment-to-order">
+        <label>Комментарий к заказу:</label>
+        <p>{{ order_comment|safe }}</p>
+    </div>
+    
+    <div class="puchase-product__comment-title">
+        
+
+        <div class="puchase-product__form-container">
+            <form class="puchase-product__form" action="create_message/" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="puchase-product__form-left">
+                    <label>Написать сообщение</label>
+                    <textarea class="puchase-product__text-comment" type="text" name="message"></textarea>
+                </div>
+                <div class="puchase-product__form-right">
+                    <input class="puchase-product__coommite-id" type="hidden" id="item_id" name="item_id" value="{{item_id}}">
+                    <div class="input__wrapper">
+                        <input class="puchase-product__btn-file" type="file" name="files" multiple>
+                        <label for="puchase-product__btn-file" class="input__file-button">
+                            <span class="input__file-icon-wrapper">📌</span>
+                            <span class="input__file-button-text">Выберите файл</span>
+                        </label>
+                    </div>
+                    <button class="puchase-product__apply-form" type="submit" value="Отправить" name="_create_message">Отправить</button>
+                </div>
+            </form>
+
+            <div class="puchase-product__correspondence-container">
+                <div class="puchase-product__correspondence-title"><label>Переписка с покупателем:</label></div>
+                <div class="puchase-product__correspondence-message-container">
+                    {% for item in correspondence %}
+
+                    <div class="puchase-product__correspondence-message puchase-product__correspondence-message--{{ item.author }}">
+                        <p class="puchase-product__correspondece-message-athor">{{ item.author }} ({{ item.created_at }}):</p>
+                        <p class="puchase-product__correspondence-message-text">{{ item.message }}</p>
+                        {% if item.videos %}
+                        <p class="puchase-product__correspondence-message-video">Видео:</p>
+                        {% for video in item.videos %}
+                        <img src="{{ video.video_preview }}" width="100" height="75">
+                        {% endfor %}
+                        {% endif %}
+                        {% if item.photos %}
+                        <p class="puchase-product__correspondence-message-photo">Фото:</p>
+                        {% for photo in item.photos %}
+                        <img src="{{ photo.image_thumb }}" width="75" height="100">
+                        {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+{% endblock %}
+
+
+

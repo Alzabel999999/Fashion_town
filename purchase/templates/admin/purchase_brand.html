@@ -1,0 +1,269 @@
+{% extends 'admin/change_form.html' %}
+{% load i18n %}
+
+{% if not is_popup %}
+{% block breadcrumbs %}
+<head>
+<style>
+
+</style>
+</head>
+
+<ol class="breadcrumb">
+    <li class="home">
+        <a href="{% url 'admin:index' %}" title="{% trans 'Home' %}"><span class="glyphicon glyphicon-home"></span></a>
+    </li>
+    <li>
+        <a href="#">
+            {{ opts.app_config.verbose_name }}
+        </a>
+    </li>
+    <li>
+        {% if has_change_permission %}
+        <a href="#">
+            {{ opts.verbose_name_plural|capfirst }}
+        </a>
+        {% else %}
+        {{ opts.verbose_name_plural|capfirst }}
+        {% endif %}
+    </li>
+    <li class="active">
+        {% if add %}{% trans 'Add' %} {{ opts.verbose_name }}{% else %}{{ original|truncatewords:"18" }}{% endif %}
+    </li>
+</ol>
+{% endblock %}
+{% endif %}
+
+{% block content %}
+<div>
+    <div><label>Бренд: {{ brand.title }}</label></div>
+    <div><label>Условия выкупа: {{ brand.condition }}</label></div>
+    <div><label>Заказано: </label><b class="oparation-brand-form__ordered">{{ brand.ordered_in_brand }}</b></div>
+    <form action="" class="oparation-brand-form">
+        <select class="oparation-brend__input" name="status" id="status">
+            <optgroup label="Выбирете фильтр">
+            {% for status in filter_statuses %}
+            <option class="oparation-brend__input-option" value="{{ status.value }}" {% if status.active %}selected{% endif %}>{{ status.label }}</option>
+            {% endfor %}
+            </optgroup>
+        </select>
+        <input type="submit" value="применить фильтр" class="oparation-brend__aplly-brend-form">
+    </form>
+
+
+
+
+
+<!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+<div class="purchase-brand">
+    {% for item in products %}
+    <div class="purchase-brand-out-wrapper">
+        <div class="purchase-brand__wrapper-container">
+            <div class="purchase-brand__container">
+                <div class="purchase-brand__container-left">
+                    <div class="purchase-brand__cont-product">
+                        <a href="{{ item.image }}" target="_blank">
+                            <div class="purchase-brand__image"
+                                style="background-image: url('{{ item.image_thumb }}');"
+                            ></div>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="purchase-brand__container-right">
+
+                        <div class="purchase-brand__goods">
+                            <span class="purchase-brand__title-size">размер:</span>
+                            <span class="purchase-brand__size">{{ item.size }}</span>
+                        </div>
+
+                        <div class="purchase-brand__goods">
+                            <span class="purchase-brand__title-amount">количество:</span>
+                            <span class="purchase-brand__amount">{{ item.count_orders }}</span>
+                        </div>
+
+                        <div class="purchase-brand__status">
+                            <form method="post" action="set_order_item_status/">
+                            {% csrf_token %}
+                                <div>
+                                    <input type="number" name="amount" class="purchase-brand__status-amount" value="1">
+                                    <select name="status" class="oparation-brend__input">
+                                        {% for status in item_statuses %}
+                                        <option value="{{ status.value }}" {% if status.label == item.status %}selected{% endif %}>
+                                            {{ status.label }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <input hidden name="old_status" value="{{ item.status }}">
+                                <input hidden name="item_id" value="{{ item.id }}">
+                                <button class="oparation-brend__aplly-brend-form oparation-brend__aplly-brend-form--mod" type="submit" name="_set_order_item_status">Сменить статус</button>
+                            </form>
+                        </div>
+
+                </div>
+            </div>
+
+            <div class="purchase-brand__feature">
+                <div class="purchase-brand__left-group">
+                    <div class="purchase-brand__goods">
+                        <span class="purchase-brand__title-name">товар:</span>
+                        <span class="purchase-brand__name">{{ item.title }}</span>
+                    </div>
+
+                    <div class="purchase-brand__goods">
+                        <span class="purchase-brand__title-name">цвет:</span>
+                        <span class="purchase-brand__color">{{ item.color }}</span>
+                    </div>
+
+
+                </div>
+                <div class="purchase-brand__right-group">
+
+                    <div class="purchase-brand__goods">
+                        <span class="purchase-brand__title-name">Закупочная цена:</span>
+                        <span class="purchase-brand__price">{{ item.price }}</span>
+                    </div>
+                    <div class="purchase-brand__goods">
+                        <span class="purchase-brand__title-name">Условие выкупа:</span>
+                        <span class="purchase-brand__condition">{{ item.condition }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="purchase-brand__additionally">Дополнительно</div>
+
+        <div class="purchase-brand__up-down-list active">
+                {% for order_item in item.items_order %}
+                <div class="purchase-brand__container--dop">
+                    <div class="purchase-brand__inner-mob">
+                        <!-- <div class="purchase-brand__up-down-list-image"
+                            style="background-image: url('{{order_item.order_item_comment_photos.all.first.image.url}}');"
+                        ></div> -->
+                        <div class="purchase-brand__up-down-list-goods">
+                        <div class="purchase-brand__up-down-list-goods-wrapper">
+                            <span class="purchase-brand__up-down-list-title-amount">id:</span>
+                            <span class="purchase-brand__up-down-list-id">{{order_item.id}}</span>
+                        </div>
+                        <div class="purchase-brand__additionally-product">
+                            <div><a href={{site_url}}/admin/purchase/purchaseproduct/{{order_item.id}}/change/>открыть заказ</a></div>
+                        </div>
+                        </div>
+                    </div>
+                    <div class="purchase-brand__up-down-list-comment">
+                        <label>Комментарий</label>
+                        <div class="purchase-brand__up-down-list-comment-text">{{order_item.comment}}</div>
+                        {% for item_1 in order_item.correspondence_messages.all %}
+                        <div class="puchase-product__correspondence-message puchase-product__correspondence-message--{{ item.author }}">
+                            <p class="puchase-product__correspondece-message-athor">{{ item_1.author }} ({{ item_1.created_at }}):</p>
+                            <p class="puchase-product__correspondence-message-text">{{ item_1.message }}</p>
+
+                            {% if item_1.photos %}
+                            <p class="puchase-product__correspondence-message-photo">Фото:</p>
+                            {% for photo in item_1.photos %}
+                            <img src="{{ photo.image_thumb }}" width="75" height="100">
+                            {% endfor %}
+                            {% endif %}
+                        </div>
+
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+    <!-- <table width="100%" cellpadding="5">
+        <tr >
+            <th>Товар</th>
+            <th>Цвет</th>
+            <th>Размер</th>
+            <th>Количество</th>
+            <th>Закупочная цена</th>
+            <th>Превью</th>
+            <th>Условие выкупа</th>
+            <th>Статус</th>
+        </tr>
+        {% for item in products %}
+        <tr style="height: 110px">
+            <td>{{ item.title }}</td>
+            <td>{{ item.color }}</td>
+            <td>{{ item.size }}</td>
+            <td>{{ item.count_orders }}</td>
+            <td>{{ item.price }}</td>
+            <td>
+
+                <a href="{{ item.image }}" target="_blank">
+                    <img src="{{ item.image_thumb }}" width="75" height="100">
+                </a>
+
+            </td>
+            <td>{{ item.condition }}</td>
+            <td>
+                <form method="post" action="set_order_item_status/">
+                    {% csrf_token %}
+                    <div>
+                        <input type="text" name="amount">
+                        <select name="status">
+                            {% for status in item_statuses %}
+                            <option value="{{ status.value }}" {% if status.label == item.status %}selected{% endif %}>
+                                {{ status.label }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <input hidden name="old_status" value="{{ item.status }}">
+                    <input hidden name="item_id" value="{{ item.id }}">
+                    <button type="submit" name="_set_order_item_status">Сменить статус</button>
+                </form>
+            </td>
+        </tr>
+        <tr >
+            <td colspan="20" class="btn__info">
+                <div class="navigaonusing">
+                    <div class="gaonutosal">
+                        <div class="pesontedan">
+                            <input id={{item.id}} type="checkbox" name="pesontedans">
+                            <label for={{item.id}}>Дополнительно</label>
+                            <div class="pesontedan-content">
+                              <table width="100%" cellpadding="5" >
+                                <tr >
+                                    <th>Id</th>
+                                    <th>Комментарий</th>
+                                    <th>Фото</th>
+                                </tr>
+                                {% for order_item in item.items_order %}
+
+                                <tr >
+                                    <th>{{order_item.id}}</th>
+                                    <th>{{order_item.comment}}</th>
+                                    <th>
+                                      {% if order_item.order_item_comment_photos.all.first %}
+
+                                        <img src="{{order_item.order_item_comment_photos.all.first.image.url}}" width="75" height="100">
+                                      {% endif %}
+                                    </th>
+                                    <th class="pesontedan-content__open-order">
+                                        <div><a href={{site_url}}/admin/purchase/purchaseproduct/{{order_item.id}}/change/>открыть заказ</a></div>
+                                    </th>
+
+
+                                </tr>
+                                {% endfor %}
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </td>
+        </tr>
+
+        {% endfor %}
+    </table> -->
+</div>
+</div>
+{% endblock %}

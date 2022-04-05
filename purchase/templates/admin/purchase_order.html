@@ -1,0 +1,193 @@
+{% extends 'admin/change_form.html' %}
+
+{% load i18n %}
+
+<body>
+    {% if not is_popup %}
+    {% block breadcrumbs %}
+    <ol class="breadcrumb">
+        <li class="home">
+            <a href="{% url 'admin:index' %}" title="{% trans 'Home' %}"><span
+                    class="glyphicon glyphicon-home"></span></a>
+        </li>
+        <li>
+            <a href="#">
+                {{ opts.app_config.verbose_name }}
+            </a>
+        </li>
+        <li>
+            {% if has_change_permission %}
+            <a href="#">
+                {{ opts.verbose_name_plural|capfirst }}
+            </a>
+            {% else %}
+            {{ opts.verbose_name_plural|capfirst }}
+            {% endif %}
+        </li>
+        <li class="active">
+            {% if add %}{% trans 'Add' %} {{ opts.verbose_name }}{% else %}{{ original|truncatewords:"18" }}{% endif %}
+        </li>
+    </ol>
+    {% endblock %}
+    {% endif %}
+
+    {% block content %}
+    <div id="content-main" class="purchase-order__container">
+        <div class="purchase-order__inner">
+            <div class="purchase-order__data"><label>Заказ №:</label> <span>{{ order.number }}</span></div>
+            <div class="purchase-order__data"><label>Способ доставки:</label><span>{{ order.delivery_method }}</span>
+            </div>
+            <div class="purchase-order__data"><label>Адрес доставки: </label><span>{{ order.delivery_address }}</span>
+            </div>
+            {% if order.buyer_role == 1 %}
+            <div class="purchase-order__data"><label>Стоимость доставки</label><span>{{ order.delivery_cost }}</span>
+            </div>
+            {% endif %}
+            <br>
+            <form class="oparation-dilivery-form" method="post" action="set_track_number/">
+                {% csrf_token %}
+                <input class="oparation-dilivery__input" type="text" name="track_number"
+                    placeholder="{{ track_number }}">
+                <button class="oparation-dilivery__aplly-dilivery-form" type="submit" name="_set_track_number">Указать
+                    трек номер</button>
+            </form>
+        </div>
+
+        <div class="container-table" ble width="100%">
+            <div class="table-head">
+                <div class="table-head__item">Товар</div>
+                <div class="table-head__item">Превью</div>
+                <div class="table-head__item">Цвет</div>
+                <div class="table-head__item">Размер</div>
+                <div class="table-head__item">Статус</div>
+                <div class="table-head__item">Количество</div>
+                <div class="table-head__item comment">Переписка</div>
+            </div>
+            {% for item in products %}
+            <div class="table-head__body" style="height: 110px">
+                <div class="table-head__body-container">
+                    <div class="table-head__body-cell"><a href="{{ item.url }}">{{ item.title }}</a></div>
+                    <div class="table-head__body-cell">
+                        <a href="{{ item.image }}" target="_blank">
+                            <img src="{{ item.image_thumb }}" width="75" height="100">
+                        </a>
+                    </div>
+                    <div class="table-head__body-cell">{{ item.color }}</div>
+                    <div class="table-head__body-cell">{{ item.size }}</div>
+                    <div class="table-head__body-cell">{{ item.status }}</div>
+                    <div class="table-head__body-cell">1</div>
+                    <!-- <div class="table-head__body-cell comment">{{ item.comment }}</div> -->
+                    {% if item.count_chat%}
+                      <div class="purchase-brand__additionally">+</div>
+                    {% else %}
+                    <div class="purchase-brand__additionally">Чат пуст</div>
+                    {% endif %}
+                </div>
+
+            </div>
+            <div class="purchase-brand__up-down-list active">
+                <div class="purchase-brand__container--dop">
+                    <div class="purchase-brand__up-down-list-comment">
+                        {% for item_1 in item.chat %}
+                        <div class="puchase-product__correspondence-message puchase-product__correspondence-message--{{ item_1.author }}">
+                            {% if item.user.is_buyer%}
+                              <p class="puchase-product__correspondece-message-athor">Покупатель ({{ item_1.created_at }}):</p>
+                            {% else %}
+                              <p class="puchase-product__correspondece-message-athor">Менеджер ({{ item_1.created_at }}):</p>
+                            {% endif %}
+                            <p class="puchase-product__correspondence-message-text">{{ item_1.message }}</p>
+
+                            {% if item_1.photos %}
+                            <p class="puchase-product__correspondence-message-photo">Фото:</p>
+                            {% for photo in item_1.photos %}
+                            <img src="{{ photo.image_thumb }}" width="75" height="100">
+                            {% endfor %}
+                            {% endif %}
+                        </div>
+
+                        {% endfor %}
+                    </div>
+                </div>
+
+        </div>
+
+            {% endfor %}
+        </div>
+
+        {% if order.buyer_role == 2 %}
+        {% if order.delivery.status == 'delivery_payment_confirmed' %}
+        <div><label>Доставка оплачена... стоимость доставки {{ order.delivery.cost }}</label></div>
+
+        <form method="post" action="set_delivery_weight/" class="oparation-dilivery-form">
+            {% csrf_token %}
+            <input class="oparation-dilivery__input" type="text" name="delivery_weight"
+                placeholder="{{ order.weight }}">
+            <button class="oparation-dilivery__aplly-dilivery-form" type="submit" name="_set_delivery_weight">
+                Указать вес посылки
+            </button>
+        </form>
+
+        {% else %}
+        <form method="post" action="set_delivery_cost/" class="oparation-dilivery-form">
+            {% csrf_token %}
+            <input class="oparation-dilivery__input" type="text" name="delivery_cost"
+                placeholder="{{ order.delivery.cost }}">
+            <button class="oparation-dilivery__aplly-dilivery-form" type="submit" name="_set_delivery_cost">
+                Указать стоимость доставки
+            </button>
+        </form>
+
+        <form method="post" action="set_delivery_weight/" class="oparation-dilivery-form">
+            {% csrf_token %}
+            <input class="oparation-dilivery__input" type="text" name="delivery_weight" placeholder="{{ order.weight }}">
+            <button class="oparation-dilivery__aplly-dilivery-form" type="submit" name="_set_delivery_weight">
+                Указать вес посылки
+            </button>
+        </form>
+
+        {% if order.delivery.status == 'delivery_payment_waiting' %}
+        <form method="post" action="confirm_delivery_payment/" class="oparation-dilivery-form">
+            {% csrf_token %}
+            <button class="oparation-dilivery__aplly-dilivery-form" type="submit"
+                name="_confirm_delivery_payment">Подтвердить оплату доставки</button>
+        </form>
+        {% endif %}
+        {% endif %}
+
+        {% else %}
+        <form method="post" action="set_delivery_weight/" class="oparation-dilivery-form">
+            {% csrf_token %}
+            <input class="oparation-dilivery__input" type="text" name="delivery_weight"
+                placeholder="{{ order.delivery.weight }}">
+            <button class="oparation-dilivery__aplly-dilivery-form" type="submit" name="_set_delivery_weight">
+                Указать вес посылки
+            </button>
+        </form>
+        {% endif %}
+
+        <form method="post" action="set_order_status/" class="oparation-dilivery-form">
+            {% csrf_token %}
+            <select name="status" id="status" class="oparation-dilivery__input">
+                {% for status in statuses %}
+                <option class="oparation-dilivery__input" value="{{ status.value }}" {% if status.active %}selected{% endif %}>{{ status.label }}
+                </option>
+                {% endfor %}
+            </select>
+            <button class="oparation-dilivery__aplly-dilivery-form" type="submit" name="_set_order_status">
+                Сменить статус заказа
+            </button>
+        </form>
+
+        <form method="post" action="get_order_specification/" class="oparation-dilivery-form">
+            {% csrf_token %}
+            <div class="oparation-dilivery__link">
+                <a href="{{ specification }}" target="_blank">Спецификация</a>
+            </div>
+            <button class="oparation-dilivery__aplly-dilivery-form" type="submit" name="_get_order_specification">
+                Сгенерировать спецификацию
+            </button>
+        </form>
+    </div>
+
+</body>
+{% endblock %}

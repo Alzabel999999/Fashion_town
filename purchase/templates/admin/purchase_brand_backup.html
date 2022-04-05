@@ -1,0 +1,93 @@
+{% extends 'admin/change_form.html' %}
+{% load i18n %}
+
+{% if not is_popup %}
+{% block breadcrumbs %}
+<ol class="breadcrumb">
+    <li class="home">
+        <a href="{% url 'admin:index' %}" title="{% trans 'Home' %}"><span class="glyphicon glyphicon-home"></span></a>
+    </li>
+    <li>
+        <a href="#">
+            {{ opts.app_config.verbose_name }}
+        </a>
+    </li>
+    <li>
+        {% if has_change_permission %}
+        <a href="#">
+            {{ opts.verbose_name_plural|capfirst }}
+        </a>
+        {% else %}
+        {{ opts.verbose_name_plural|capfirst }}
+        {% endif %}
+    </li>
+    <li class="active">
+        {% if add %}{% trans 'Add' %} {{ opts.verbose_name }}{% else %}{{ original|truncatewords:"18" }}{% endif %}
+    </li>
+</ol>
+{% endblock %}
+{% endif %}
+
+{% block content %}
+<div>
+    <div><label>Бренд: {{ brand.title }}</label></div>
+    <div><label>Условия выкупа: {{ brand.condition }}</label></div>
+    <div><label>Заказано: {{ brand.ordered_in_brand }}</label></div>
+    <form action="">
+        <select name="status" id="status">
+            {% for status in filter_statuses %}
+            <option value="{{ status.value }}" {% if status.active %}selected{% endif %}>{{ status.label }}</option>
+            {% endfor %}
+        </select>
+        <input type="submit" value="применить фильтр">
+    </form>
+    <table width="100%">
+        <tr>
+            <th>Товар</th>
+            <th>Превью</th>
+            <th>Цвет</th>
+            <th>Размер</th>
+            <th>Закупочная цена</th>
+            <th>Условие выкупа</th>
+            <th>Статус</th>
+            <th>Переписка</th>
+            <th>Заказ</th>
+            <th>Количество</th>
+        </tr>
+        {% for item in products %}
+        <tr style="height: 110px">
+            <td><a href="{{ item.url }}">{{ item.title }}</a></td>
+            <td>
+                <a href="{{ item.image }}" target="_blank">
+                    <img src="{{ item.image_thumb }}" width="75" height="100">
+                </a>
+            </td>
+            <td>{{ item.color }}</td>
+            <td>{{ item.size }}</td>
+            <td>{{ item.price }}</td>
+            <td>{{ item.condition }}</td>
+            <td>
+                <form method="post" action="set_order_item_status/">
+                    {% csrf_token %}
+                    <div>
+                        <select name="status">
+                            {% for status in item_statuses %}
+                            <option value="{{ status.value }}" {% if status.label == item.status %}selected{% endif %}>
+                                {{ status.label }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <input hidden name="item_id" value="{{ item.id }}">
+                    <button type="submit" name="_set_order_item_status">Сменить статус</button>
+                </form>
+            </td>
+            <td>{{ item.message }}</td>
+            <td><a href="{{ purchase_order_url }}{{ item.order_id }}/change/">{{ item.order_number }}</a></td>
+            <td>{{ item.count }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+</div>
+{% endblock %}

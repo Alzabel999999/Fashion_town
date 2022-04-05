@@ -1,0 +1,2 @@
+from .update_currency import update_currency_task
+from .update_products import update_products_task

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>specification</title>
+    <style type="text/css">
+        td {height: 20px; vertical-align: top}
+        table {padding: 10px, 30px, 10px, 0px}
+        
+    </style>
+</head>
+<body>
+<div>
+    <h1>спецификация заказа №{{ order.number }}</h1>
+    <p>обновлено {{ now }}</p>
+</div>
+<br>
+<label>Товары</label>
+<div>
+    {% for product in products%}
+    <div>
+        <table>
+            <tr>
+                <td rowspan="6"><img src="{{ product.image }}" height="150"></td>
+                <td>Товар:</td>
+                <td>{{ product.title }}</td>
+            </tr>
+            <tr>
+                <td>Цвет:</td>
+                <td>{{ product.color }}</td>
+            </tr>
+            <tr>
+                <td>Размер:</td>
+                <td>{{ product.size }}</td>
+            </tr>
+            <tr>
+                <td>Цена:</td>
+                <td>{{ product.price }}</td>
+            </tr>
+            <tr>
+                <td>Количество:</td>
+                <td>{{ product.count }}</td>
+            </tr>
+            <tr>
+                <td>Общая цена:</td>
+                <td>{{ product.total_price }}</td>
+            </tr>
+        </table>
+    </div>
+    {% endfor %}
+</div>
+<label>Другие услуги</label>
+<div>Доставка: какая-то цена</div>
+
+</body>
+</html>

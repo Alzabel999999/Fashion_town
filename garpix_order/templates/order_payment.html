@@ -1,0 +1,10 @@
+{% extends 'admin/change_form.html' %}
+{% block custom_form %}
+{% if is_show_button  %}
+    <div class="submit-row list-group">
+        {% csrf_token %}
+        <label class="list-group-item active">Оплата заказа</label>
+        <a href="order_payment/" class="list-group-item">Заказ оплачен</a>
+    </div>
+{% endif %}
+{% endblock %}
